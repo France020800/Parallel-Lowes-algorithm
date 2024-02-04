@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import time
 
 def detect_keypoints(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_threshold=0.04):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -36,6 +37,7 @@ def detect_keypoints(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_thr
     return keypoints
 
 # Load images
+start_time = time.time()
 for i in range(0, 12):
     image = cv2.imread('images/flower{}.jpg'.format(i))
     keypoints = detect_keypoints(image, contrast_threshold=0.02)
@@ -49,3 +51,6 @@ for i in range(0, 12):
     # Save the result
     output_image_path = 'results/flower{}_keypoints.jpg'.format(i)
     cv2.imwrite(output_image_path, image_with_keypoints)
+
+end_time = time.time()
+print('Time taken to process images in sequence: {:.2f} seconds'.format(end_time - start_time))
