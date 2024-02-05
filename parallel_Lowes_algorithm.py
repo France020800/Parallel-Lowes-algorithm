@@ -64,7 +64,7 @@ if __name__ == '__main__':
     print('Using {} processes'.format(pool_size))
 
     # Load images
-    image_paths = ['images/flower{}.jpg'.format(i) for i in range(12)]
+    image_paths = ['images/flower{}.jpg'.format(i) for i in range(16)]
     images = [cv2.imread(image_path) for image_path in image_paths]
 
     # Split the images into chunks
