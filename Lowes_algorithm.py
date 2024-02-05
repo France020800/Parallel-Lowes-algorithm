@@ -53,4 +53,4 @@ for i in range(0, 12):
     cv2.imwrite(output_image_path, image_with_keypoints)
 
 end_time = time.time()
-print('Time taken to process images in sequence: {:.2f} seconds'.format(end_time - start_time))
+print('{:.2f}'.format(end_time - start_time))

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import multiprocessing
-import asyncio
+import sys
 import time
 
 def detect_keypoints_async(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_threshold=0.04):
@@ -59,7 +59,10 @@ def draw_keypoints(image, keypoints_serializable):
 
 if __name__ == '__main__':
     # Create multiprocessing pool
-    pool_size = multiprocessing.cpu_count() * 2
+    if len(sys.argv) > 1:
+        pool_size = int(sys.argv[1])
+    else:
+        pool_size = multiprocessing.cpu_count() * 2
     pool = multiprocessing.Pool(processes=pool_size)
     print('Using {} processes'.format(pool_size))
 
@@ -69,7 +72,6 @@ if __name__ == '__main__':
 
     # Split the images into chunks
     image_chunks = [images[i::pool_size] for i in range(pool_size)]
-    print(f'Image chunks length: {len(image_chunks)}')
 
     # Process images in parallel
     start_time = time.time()
@@ -88,4 +90,4 @@ if __name__ == '__main__':
         cv2.imwrite(output_image_path, image_with_keypoints)
 
     end_time = time.time()
-    print('Time taken to process images in parallel: {:.2f} seconds'.format(end_time - start_time))
+    print('{:.2f}'.format(end_time - start_time))
