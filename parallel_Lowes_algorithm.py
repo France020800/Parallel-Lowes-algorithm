@@ -11,7 +11,6 @@ def detect_keypoints_async(image, num_octaves=4, num_scales=5, sigma=1.6, contra
     sift = cv2.SIFT_create()
 
     keypoints = []
-    iter = 0
     for octave in range(num_octaves):
         for scale in range(num_scales):
             # Compute the scale level
@@ -39,6 +38,7 @@ def detect_keypoints_async(image, num_octaves=4, num_scales=5, sigma=1.6, contra
         if octave < num_octaves - 1:
             gray = cv2.resize(gray, (gray.shape[1] // 2, gray.shape[0] // 2))
 
+    #print(f'Keypoints size {len(keypoints)}')
     return keypoints
 
 def parallel_detect_keypoints(images):
@@ -72,11 +72,15 @@ if __name__ == '__main__':
 
     # Split the images into chunks
     image_chunks = [images[i::pool_size] for i in range(pool_size)]
+    print(f'Image chunks length: {len(image_chunks)}')
 
     # Process images in parallel
     start_time = time.time()
     results = pool.map(parallel_detect_keypoints, image_chunks)
+    # pool.close()
+    # pool.join()
     end_time = time.time()
+    print(f'Results length: {len(results)}')
 
     # Draw keypoints on the images
     for i, keypoints in enumerate(results):
