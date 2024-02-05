@@ -38,18 +38,12 @@ def detect_keypoints(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_thr
 
 # Load images
 start_time = time.time()
-keypoints_list = []
-images = []
-for i in range(0, 16):
+for i in range(0, 12):
     image = cv2.imread('images/flower{}.jpg'.format(i))
     keypoints = detect_keypoints(image, contrast_threshold=0.02)
-    keypoints_list.append(keypoints)
-    images.append(image)
-end_time = time.time()
 
-for i in range(len(images)):
     # Draw keypoints on the image
-    image_with_keypoints = cv2.drawKeypoints(images[i], keypoints_list[i], None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    image_with_keypoints = cv2.drawKeypoints(image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
     # Display the result
     #cv2.imshow('Image with keypoints {}'.format(i), image_with_keypoints)
@@ -58,5 +52,5 @@ for i in range(len(images)):
     output_image_path = 'results/flower{}_keypoints.jpg'.format(i)
     cv2.imwrite(output_image_path, image_with_keypoints)
 
-
-print('{:.4f}'.format(end_time - start_time))
+end_time = time.time()
+print('Time taken to process images in sequence: {:.2f} seconds'.format(end_time - start_time))

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import multiprocessing
-import sys
+import asyncio
 import time
 
 def detect_keypoints_async(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_threshold=0.04):
@@ -59,15 +59,12 @@ def draw_keypoints(image, keypoints_serializable):
 
 if __name__ == '__main__':
     # Create multiprocessing pool
-    if len(sys.argv) > 1:
-        pool_size = int(sys.argv[1])
-    else:
-        pool_size = multiprocessing.cpu_count() 
+    pool_size = multiprocessing.cpu_count() * 2
     pool = multiprocessing.Pool(processes=pool_size)
     print('Using {} processes'.format(pool_size))
 
     # Load images
-    image_paths = ['images/flower{}.jpg'.format(i) for i in range(16)]
+    image_paths = ['images/flower{}.jpg'.format(i) for i in range(12)]
     images = [cv2.imread(image_path) for image_path in image_paths]
 
     # Split the images into chunks
@@ -77,10 +74,7 @@ if __name__ == '__main__':
     # Process images in parallel
     start_time = time.time()
     results = pool.map(parallel_detect_keypoints, image_chunks)
-    # pool.close()
-    # pool.join()
     end_time = time.time()
-    print(f'Results length: {len(results)}')
 
     # Draw keypoints on the images
     for i, keypoints in enumerate(results):
@@ -93,4 +87,5 @@ if __name__ == '__main__':
         output_image_path = 'results/flower{}_keypoints.jpg'.format(i)
         cv2.imwrite(output_image_path, image_with_keypoints)
 
-    print('{:.4f}'.format(end_time - start_time))
+    end_time = time.time()
+    print('Time taken to process images in parallel: {:.2f} seconds'.format(end_time - start_time))
