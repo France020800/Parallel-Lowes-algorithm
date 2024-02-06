@@ -1,0 +1,7 @@
+DATA
+Sequential times:
+32.3221
+
+Parallel times:
+13.6275     8 Threads
+

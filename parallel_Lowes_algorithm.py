@@ -1,10 +1,12 @@
 import cv2
 import numpy as np
-import multiprocessing
-import sys
 import time
+import sys
+import multiprocessing
+from multiprocessing import Pool
+import augmentation
 
-def detect_keypoints_async(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_threshold=0.04):
+def detect_keypoints(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_threshold=0.04):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
     # Create a SIFT detector object
@@ -38,56 +40,63 @@ def detect_keypoints_async(image, num_octaves=4, num_scales=5, sigma=1.6, contra
         if octave < num_octaves - 1:
             gray = cv2.resize(gray, (gray.shape[1] // 2, gray.shape[0] // 2))
 
-    #print(f'Keypoints size {len(keypoints)}')
     return keypoints
 
-def parallel_detect_keypoints(images):
-    keypoints_list = []
-    for image in images:
-        keypoints = detect_keypoints_async(image, contrast_threshold=0.02)
-        keypoints_list.append(keypoints)
-    
-    return keypoints_list
-
-def draw_keypoints(image, keypoints_serializable):
-    kp_data = keypoints_serializable[0]
-    keypoints = [cv2.KeyPoint(x=k[0][0], y=k[0][1], size=k[1], angle=k[2], response=k[3], octave=k[4], class_id=k[5]) for k in kp_data]
-    
-    image_with_keypoints = cv2.drawKeypoints(image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-    return image_with_keypoints
-
+def detect_keypoints_for_batch(args):
+    images_batch, contrast_threshold = args
+    keypoints_batch = []
+    for image in images_batch:
+        keypoints = detect_keypoints(image, contrast_threshold = contrast_threshold)
+        keypoints_batch.append(keypoints)
+    return keypoints_batch
 
 if __name__ == '__main__':
-    # Create multiprocessing pool
+    # Load images
+    contrast_threshold = 0.02  # Set your contrast threshold here
+
+    images = []
+    image_paths = ['images/flower{}.jpg'.format(i) for i in range(7)]
+    loaded_images = [cv2.imread(image_path) for image_path in image_paths]
+    for image in loaded_images:
+        augmented_images = augmentation.data_augmentation(image, (400, 400), (0.25, 3.0))
+        images.extend(augmented_images)
+
+    print('Loaded {} images'.format(len(images)))
+
+    # Create a pool of workers
     if len(sys.argv) > 1:
         pool_size = int(sys.argv[1])
     else:
         pool_size = multiprocessing.cpu_count() * 2
-    pool = multiprocessing.Pool(processes=pool_size)
+    pool = Pool(processes=pool_size)
     print('Using {} processes'.format(pool_size))
 
-    # Load images
-    image_paths = ['images/flower{}.jpg'.format(i) for i in range(16)]
-    images = [cv2.imread(image_path) for image_path in image_paths]
+    # Split images into batches
+    batch_size = round(len(images) / pool_size)
+    image_batches = [images[i:i+batch_size] for i in range(0, len(images), batch_size)]
+    print('Split the images into {} batches'.format(len(image_batches)))
 
-    # Split the images into chunks
-    image_chunks = [images[i::pool_size] for i in range(pool_size)]
-
-    # Process images in parallel
     start_time = time.time()
-    results = pool.map(parallel_detect_keypoints, image_chunks)
+
+    args = [(batch, contrast_threshold) for batch in image_batches]
+    keypoints_batches = pool.map(detect_keypoints_for_batch, args)
+
+    # Close the pool of workers
+    pool.close()
+    pool.join()
     end_time = time.time()
 
-    # Draw keypoints on the images
-    for i, keypoints in enumerate(results):
-        if i == len(images):
-            break
+    keypoints_list = [keypoint for keypoints_batch in keypoints_batches for keypoint in keypoints_batch]
 
-        image_with_keypoints = draw_keypoints(images[i], keypoints)
+    # Draw keypoints on the images
+    for i, keypoints in enumerate(keypoints_list):
+        image_index = i % len(images)
+        keypoints = [cv2.KeyPoint(x=k[0][0], y=k[0][1], size=k[1], angle=k[2], response=k[3], octave=k[4], class_id=k[5]) for k in keypoints]
+        image = images[image_index]
+        image_with_keypoints = cv2.drawKeypoints(image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
         # Save the result
         output_image_path = 'results/flower{}_keypoints.jpg'.format(i)
         cv2.imwrite(output_image_path, image_with_keypoints)
 
-    end_time = time.time()
-    print('{:.2f}'.format(end_time - start_time))
+    print('{:.4f}'.format(end_time - start_time))

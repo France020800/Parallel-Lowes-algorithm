@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import time
+import augmentation
 
 def detect_keypoints(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_threshold=0.04):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -38,19 +39,20 @@ def detect_keypoints(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_thr
 
 # Load images
 start_time = time.time()
-for i in range(0, 12):
+image_index = 0
+for i in range(0, 7):
     image = cv2.imread('images/flower{}.jpg'.format(i))
-    keypoints = detect_keypoints(image, contrast_threshold=0.02)
+    augmented_images = augmentation.data_augmentation(image, (400, 400), (0.25, 3.0))
+    for augmented_image in augmented_images:
+        keypoints = detect_keypoints(augmented_image, contrast_threshold=0.02)
 
-    # Draw keypoints on the image
-    image_with_keypoints = cv2.drawKeypoints(image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        # Draw keypoints on the image
+        image_with_keypoints = cv2.drawKeypoints(augmented_image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-    # Display the result
-    #cv2.imshow('Image with keypoints {}'.format(i), image_with_keypoints)
-
-    # Save the result
-    output_image_path = 'results/flower{}_keypoints.jpg'.format(i)
-    cv2.imwrite(output_image_path, image_with_keypoints)
+        # Save the result
+        output_image_path = 'results/flower{}_keypoints.jpg'.format(image_index)
+        cv2.imwrite(output_image_path, image_with_keypoints)
+        image_index += 1
 
 end_time = time.time()
-print('{:.2f}'.format(end_time - start_time))
+print('{:.4f}'.format(end_time - start_time))
