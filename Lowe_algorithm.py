@@ -37,29 +37,31 @@ def detect_keypoints(image, num_octaves=4, num_scales=5, sigma=1.6, contrast_thr
 
     return keypoints
 
-# Load images
+# Multi image version
 start_time = time.time()
-# image_index = 0
-# for i in range(0, 7):
-#     image = cv2.imread('images/flower{}.jpg'.format(i))
-#     augmented_images = augmentation.data_augmentation(image, (400, 400), (0.25, 3.0))
-#     for augmented_image in augmented_images:
-#         keypoints = detect_keypoints(augmented_image, contrast_threshold=0.02)
+image_index = 0
+for i in range(0, 7):
+    image = cv2.imread('images/flower{}.jpg'.format(i))
+    augmented_images = augmentation.data_augmentation(image, (400, 400), (0.25, 3.0))
+    for augmented_image in augmented_images:
+        keypoints = detect_keypoints(augmented_image, contrast_threshold=0.02)
 
-#         # Draw keypoints on the image
-#         image_with_keypoints = cv2.drawKeypoints(augmented_image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        # Draw keypoints on the image
+        image_with_keypoints = cv2.drawKeypoints(augmented_image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-#         # Save the result
-#         output_image_path = 'results/flower{}_keypoints.jpg'.format(image_index)
-#         cv2.imwrite(output_image_path, image_with_keypoints)
-#         image_index += 1
+        # Save the result
+        output_image_path = 'results/flower{}_keypoints.jpg'.format(image_index)
+        cv2.imwrite(output_image_path, image_with_keypoints)
+        image_index += 1
 
-image = cv2.imread('test.jpg')
-# image = cv2.imread('images/flower0.jpg')
-keypoints = detect_keypoints(image, contrast_threshold=0.04, num_scales=4)
-image_with_keypoints = cv2.drawKeypoints(image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-output_image_path = 'test_with_keypoints.jpg'.format(0)
-cv2.imwrite(output_image_path, image_with_keypoints)
+# Single image version
+# image = cv2.imread('images/single_flower.jpg')
 
-end_time = time.time()
-print('{:.4f}'.format(end_time - start_time))
+# start_time = time.time()
+# keypoints = detect_keypoints(image, contrast_threshold=0.04, num_scales=2)
+# image_with_keypoints = cv2.drawKeypoints(image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+# end_time = time.time()
+
+# output_image_path = 'results/single_flower.jpg'
+# cv2.imwrite(output_image_path, image_with_keypoints)
+# print('{:.4f}'.format(end_time - start_time))

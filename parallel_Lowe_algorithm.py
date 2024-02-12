@@ -51,13 +51,15 @@ def keypoints_processor(args):
     # print('Process pid: {} finish'.format(multiprocessing.current_process().pid))
     return kp_serializable
 
-# Load images
-start_time = time.time()
-image = cv2.imread('test.jpg')
-keypoints = detect_keypoints(image, contrast_threshold=0.04, num_scales=4)
-image_with_keypoints = cv2.drawKeypoints(image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-output_image_path = 'test_with_keypoints.jpg'.format(0)
-cv2.imwrite(output_image_path, image_with_keypoints)
+if __name__ == '__main__':
+    # Load images
+    image = cv2.imread('images/single_flower.jpg')
 
-end_time = time.time()
-print('{:.4f}'.format(end_time - start_time))
+    start_time = time.time()
+    keypoints = detect_keypoints(image, contrast_threshold=0.04, num_scales=2)
+    image_with_keypoints = cv2.drawKeypoints(image, keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    end_time = time.time()
+
+    output_image_path = 'results/single_flower.jpg'
+    cv2.imwrite(output_image_path, image_with_keypoints)
+    print('{:.4f}'.format(end_time - start_time))

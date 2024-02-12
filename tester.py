@@ -2,12 +2,12 @@ import subprocess
 import matplotlib.pyplot as plt
 
 def run_sequential():
-    result = subprocess.run(['python', 'Lowes_algorithm.py'], stdout=subprocess.PIPE)
+    result = subprocess.run(['python', 'Lowe_algorithm.py'], stdout=subprocess.PIPE)
     execution_time = float(result.stdout.decode('utf-8').split('\n')[-2])
     return execution_time
 
 def run_parallel(num_processes):
-    result = subprocess.run(['python', 'parallel_Lowes_algorithm.py', str(num_processes)], stdout=subprocess.PIPE)
+    result = subprocess.run(['python', 'parallel_Input_Lowe_algorithm.py', str(num_processes)], stdout=subprocess.PIPE)
     execution_time = float(result.stdout.decode('utf-8').split('\n')[-2])
     return execution_time
 
